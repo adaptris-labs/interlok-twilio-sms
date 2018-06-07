@@ -1,6 +1,6 @@
 ext {
-  adpCoreVersion = project.hasProperty('adpCoreVersion') ? project.getProperty('adpCoreVersion') : '3.6-SNAPSHOT'
-  releaseVersion = project.hasProperty('releaseVersion') ? project.getProperty('releaseVersion') : '3.6-SNAPSHOT'
+  adpCoreVersion = project.hasProperty('adpCoreVersion') ? project.getProperty('adpCoreVersion') : '3.7-SNAPSHOT'
+  releaseVersion = project.hasProperty('releaseVersion') ? project.getProperty('releaseVersion') : '3.7-SNAPSHOT'
   mavenPublishUrl = project.hasProperty('mavenPublishUrl') ? project.getProperty('mavenPublishUrl') : 'https://development.adaptris.net/nexus/content/repositories/snapshots'
   repoUsername = project.hasProperty('repoUsername') ? project.getProperty('repoUsername') : 'unknown'
   repoPassword = project.hasProperty('repoPassword') ? project.getProperty('repoPassword') : 'unknown'
@@ -10,7 +10,6 @@ ext {
   componentName='Interlok/Twilio SMS'
   organizationName = "Quotidian Ennui"
   organizationUrl = "http://quotidian-ennui.github.io"
-  slf4jVersion = '1.7.25'
 }
 
 if (JavaVersion.current().isJava8Compatible()) {
@@ -31,9 +30,10 @@ group   = 'io.github.quotidian-ennui'
 version = releaseVersion
 def versionDir = "$buildDir/version"
 
-// In this section you declare where to find the dependencies of your project
+
 repositories {
-  maven { url "$defaultNexusRepo" }
+  mavenCentral()
+  maven { url "https://repo1.maven.org/maven2/" }
   maven { url "https://development.adaptris.net/nexus/content/groups/public" }
   maven { url "https://development.adaptris.net/nexus/content/repositories/snapshots" }
   maven { url "https://development.adaptris.net/nexus/content/repositories/releases" }
@@ -58,19 +58,19 @@ configurations.all {
 }
 
 dependencies {
-  compile ("com.adaptris:adp-core:$adpCoreVersion") { changing= true}
-  compile ("com.adaptris:interlok-common:$adpCoreVersion") { changing= true}
-  compile ("org.slf4j:slf4j-api:$slf4jVersion")
+  compile ("com.adaptris:adp-core:3.7-SNAPSHOT") { changing= true}
+  compile ("com.adaptris:interlok-common:3.7-SNAPSHOT") { changing= true}
+  compile ("org.slf4j:slf4j-api:1.7.25")
   compile ("com.twilio.sdk:twilio:7.11+")
 
   testCompile ('junit:junit:4.12')
-  testCompile ("com.adaptris:adp-stubs:$adpCoreVersion") { changing= true}
+  testCompile ("com.adaptris:adp-stubs:3.7-SNAPSHOT") { changing= true}
   testCompile ("org.apache.logging.log4j:log4j-core:2.8.1")
   testCompile ("org.apache.logging.log4j:log4j-1.2-api:2.8.1")
   testCompile ("org.apache.logging.log4j:log4j-slf4j-impl:2.8.1")
   testCompile ("org.apache.logging.log4j:log4j-api:2.8.1")
 
-  javadoc("com.adaptris:adp-core-apt:$adpCoreVersion") { changing= true}
+  javadoc("com.adaptris:adp-core-apt:3.7-SNAPSHOT") { changing= true}
 
 }
 
