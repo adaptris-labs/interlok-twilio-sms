@@ -1,8 +1,18 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+plugins {
+  id "java"
+  id "distribution"
+  id "maven"
+  id "maven-publish"
+  id "jacoco"
+  id "com.palantir.docker" version "0.19.2"
+}
+
 ext {
   interlokCoreVersion = project.hasProperty('interlokCoreVersion') ? project.getProperty('interlokCoreVersion') : '3.8-SNAPSHOT'
   releaseVersion = project.hasProperty('releaseVersion') ? project.getProperty('releaseVersion') : '3.8-SNAPSHOT'
-//  mavenPublishUrl = project.hasProperty('mavenPublishUrl') ? project.getProperty('mavenPublishUrl') : 'https://development.adaptris.net/nexus/content/repositories/snapshots'
-  mavenPublishUrl = project.hasProperty('mavenPublishUrl') ? project.getProperty('mavenPublishUrl') : 'https://development.adaptris.net/nexus/content/repositories/aurea-ba-plugin'
+  mavenPublishUrl = project.hasProperty('mavenPublishUrl') ? project.getProperty('mavenPublishUrl') : 'https://development.adaptris.net/nexus/content/repositories/snapshots'
   repoUsername = project.hasProperty('repoUsername') ? project.getProperty('repoUsername') : 'unknown'
   repoPassword = project.hasProperty('repoPassword') ? project.getProperty('repoPassword') : 'unknown'
   defaultNexusRepo = project.hasProperty('defaultNexusRepo') ? project.getProperty('defaultNexusRepo') : 'https://repo1.maven.org/maven2/'
@@ -12,6 +22,7 @@ ext {
   componentName='Interlok/Twilio SMS'
   organizationName = "Quotidian Ennui"
   organizationUrl = "http://quotidian-ennui.github.io"
+  executableClassifier = Os.isFamily(Os.FAMILY_WINDOWS) ? "win64" : "unix"
 }
 
 if (JavaVersion.current().isJava8Compatible()) {
@@ -22,16 +33,16 @@ if (JavaVersion.current().isJava8Compatible()) {
   }
 }
 
-apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'maven-publish'
-apply plugin: "jacoco"
 
 sourceCompatibility = 1.8
 group   = 'io.github.quotidian-ennui'
 version = releaseVersion
 def versionDir = "$buildDir/version"
 
+
+distTar.enabled=false
+distZip.enabled=false
+dockerfileZip.enabled=false
 
 repositories {
   jcenter()
@@ -44,6 +55,9 @@ repositories {
 
 configurations {
   javadoc {}
+  war{}
+  interlokRuntime{}
+  interlokBinary{}
   all*.exclude group: 'c3p0'
   all*.exclude group: 'commons-logging'
   all*.exclude group: 'javamail'
@@ -63,8 +77,17 @@ dependencies {
   compile ("com.adaptris:interlok-core:$interlokCoreVersion") { changing= true}
   compile ("com.adaptris:interlok-common:$interlokCoreVersion") { changing= true}
   compile ("org.slf4j:slf4j-api:1.7.25")
-  compile ("com.twilio.sdk:twilio:7.11+")
-
+  compile ("com.twilio.sdk:twilio:7.11+") {
+    exclude group:"org.apache.httpcomponents", module: "httpclient"
+    exclude group:"com.fasterxml.jackson.core", module: "jackson-databind"
+    exclude group:"com.fasterxml.jackson.core", module: "jackson-core"
+  }
+  compile ("org.apache.httpcomponents:httpclient:4.5.6")
+  compile ("com.fasterxml.jackson.core:jackson-databind:2.9.6")
+  interlokRuntime ("com.adaptris:interlok-varsub:$interlokCoreVersion") { changing=true }
+  interlokRuntime ("com.adaptris:interlok-xinclude:$interlokCoreVersion") { changing=true }
+  // Doesn't exist yet...
+  // interlokBinary group: "com.adaptris", name:"interlok-executable", version:"1.0.0", classifier: executableClassifier
   testCompile ('junit:junit:4.12')
   testCompile ("com.adaptris:interlok-stubs:$interlokCoreVersion") { changing= true}
   testCompile ("org.apache.logging.log4j:log4j-core:2.11.1")
@@ -73,7 +96,7 @@ dependencies {
   testCompile ("org.apache.logging.log4j:log4j-api:2.11.1")
 
   javadoc("com.adaptris:interlok-core-apt:$interlokCoreVersion") { changing= true}
-
+  war ("com.adaptris.ui:interlok:$interlokCoreVersion@war") {changing=true}
 }
 
 
@@ -103,7 +126,7 @@ task generateVersion {
       entry(key: 'component.name', value: componentName)
       entry(key: 'build.version', value: releaseVersion)
       entry(key: 'groupId', value: project.group)
-      entry(key: 'artifactId', value: project.name)      
+      entry(key: 'artifactId', value: project.name)
       entry(key: 'build.date', value: new Date().format('yyyy-MM-dd'))
     }
   }
@@ -121,7 +144,7 @@ javadoc {
 }
 
 jacoco {
-  toolVersion="0.7.7.201606060606"
+  toolVersion="0.8.1"
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
@@ -137,6 +160,30 @@ task examplesJar(type: Jar, dependsOn: test) {
 artifacts {
   archives javadocJar
   archives examplesJar
+}
+
+
+distributions {
+  main {
+    contents {
+      from {
+        "$projectDir/src/main/interlok"
+      }
+      into('lib') {
+        from(project.configurations.runtime)
+        from(project.configurations.interlokRuntime)
+        from jar
+      }
+      into('bin') {
+        from(project.configurations.interlokBinary)
+      }
+      into('webapps') {
+        from(project.configurations.war)
+      }
+      rename '(.*)-[0-9]+\\..*.jar', '$1.jar'
+      rename '(.*)-[0-9]+\\..*.war', '$1.war'
+    }
+  }
 }
 
 publishing {
@@ -164,3 +211,14 @@ publishing {
     }
   }
 }
+
+
+docker {
+  name "lewinc/twilio-sms"
+  tags 'latest'
+  pull true
+  files tasks.installDist.outputs
+}
+
+docker.dependsOn installDist
+check.dependsOn jacocoTestReport
