@@ -1,5 +1,5 @@
 import org.apache.tools.ant.taskdefs.condition.Os
-
+import org.apache.tools.ant.filters.*
 plugins {
   id "java"
   id "distribution"
@@ -22,7 +22,11 @@ ext {
   componentName='Interlok/Twilio SMS'
   organizationName = "Quotidian Ennui"
   organizationUrl = "http://quotidian-ennui.github.io"
-  executableClassifier = Os.isFamily(Os.FAMILY_WINDOWS) ? "win64" : "unix"
+  targetos = project.hasProperty('targetos') ? project.getProperty("targetos") : 'unix'
+  targetJava = project.hasProperty('targetJava') ? project.getProperty("targetJava") : '/opt/java/jdk8/bin/java'
+  targetDeployDirectory = project.hasProperty('targetDeployDirectory') ? project.getProperty("targetDeployDirectory") : '/opt/interlok'
+  binaryExtractDir = new File(project.buildDir, "binaries")
+
 }
 
 if (JavaVersion.current().isJava8Compatible()) {
@@ -41,12 +45,19 @@ def versionDir = "$buildDir/version"
 
 
 distTar.enabled=false
-distZip.enabled=false
+distZip.enabled=true
 dockerfileZip.enabled=false
 
 repositories {
   jcenter()
-  maven { url "https://repo1.maven.org/maven2/" }
+  mavenCentral()
+  maven {
+      credentials {
+        username repoUsername
+        password repoPassword
+      }
+      url "https://development.adaptris.net/nexus/content/groups/private"
+    }
   maven { url "https://development.adaptris.net/nexus/content/groups/public" }
   maven { url "https://development.adaptris.net/nexus/content/repositories/snapshots" }
   maven { url "https://development.adaptris.net/nexus/content/repositories/releases" }
@@ -84,10 +95,21 @@ dependencies {
   }
   compile ("org.apache.httpcomponents:httpclient:4.5.6")
   compile ("com.fasterxml.jackson.core:jackson-databind:2.9.6")
+
   interlokRuntime ("com.adaptris:interlok-varsub:$interlokCoreVersion") { changing=true }
+  interlokRuntime ("com.adaptris:interlok-boot:$interlokCoreVersion") { changing=true }
   interlokRuntime ("com.adaptris:interlok-xinclude:$interlokCoreVersion") { changing=true }
-  // Doesn't exist yet...
-  // interlokBinary group: "com.adaptris", name:"interlok-executable", version:"1.0.0", classifier: executableClassifier
+  interlokRuntime ("com.adaptris:interlok-logging:$interlokCoreVersion") { changing=true }
+  interlokRuntime ("org.slf4j:slf4j-api:1.7.25")
+  interlokRuntime ("org.slf4j:jcl-over-slf4j:1.7.25")
+  interlokRuntime ("org.slf4j:jul-to-slf4j:1.7.25")
+  interlokRuntime ("org.apache.logging.log4j:log4j-core:2.9.1")
+  interlokRuntime ("org.apache.logging.log4j:log4j-1.2-api:2.9.1")
+  interlokRuntime ("org.apache.logging.log4j:log4j-slf4j-impl:2.9.1")
+  interlokRuntime ("org.apache.logging.log4j:log4j-api:2.9.1")
+
+  interlokBinary ("com.adaptris:interlok-executable:1.0.0:$targetos") {changing=true}
+
   testCompile ('junit:junit:4.12')
   testCompile ("com.adaptris:interlok-stubs:$interlokCoreVersion") { changing= true}
   testCompile ("org.apache.logging.log4j:log4j-core:2.11.1")
@@ -157,6 +179,33 @@ task examplesJar(type: Jar, dependsOn: test) {
   from new File(buildDir, '/examples')
 }
 
+task unzipBinaries(type: Copy) {
+  description 'Unzip Binary Artifacts'
+  group 'build'
+  project.configurations.interlokBinary.each {
+    from(zipTree(it))
+  }
+  exclude "META-INF/*", "META-INF"
+  into binaryExtractDir
+}
+
+task prepareBinary(type: Copy, dependsOn: unzipBinaries) {
+  description 'Rewrite the LAX file according to specifications'
+  group 'build'
+  delete(new File(binaryExtractDir, "adapter.lax"))
+  from file(new File(binaryExtractDir, "adapter.lax.template").getCanonicalPath())
+  into (binaryExtractDir)
+  rename { String fileName ->
+    fileName.replace('adapter.lax.template', 'adapter.lax')
+  }
+  filter(ReplaceTokens, tokens: [LAX_DIR: "$targetDeployDirectory/bin".toString()])
+  filter(ReplaceTokens, tokens: [LAX_CLASS_PATH: "../config;../lib/interlok-boot.jar;lax.jar"])
+  filter(ReplaceTokens, tokens: [LAX_NL_CURRENT_VM: targetJava])
+  filter(ReplaceTokens, tokens: [LAX_NL_JAVA_OPTION_ADDITIONAL: "-server -XX:+UseG1GC -Dnetworkaddress.cache.ttl=900 -Dnetworkaddress.cache.negative.ttl=10"])
+  filter(ReplaceTokens, tokens: [LAX_USER_DIR: targetDeployDirectory])
+  filter(ReplaceTokens, tokens: [LAX_ROOT_INSTALL_DIR: targetDeployDirectory])
+}
+
 artifacts {
   archives javadocJar
   archives examplesJar
@@ -175,13 +224,15 @@ distributions {
         from jar
       }
       into('bin') {
-        from(project.configurations.interlokBinary)
+        from (binaryExtractDir)
+        exclude "adapter.lax.template"
       }
       into('webapps') {
         from(project.configurations.war)
       }
       rename '(.*)-[0-9]+\\..*.jar', '$1.jar'
       rename '(.*)-[0-9]+\\..*.war', '$1.war'
+      duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
   }
 }
@@ -220,5 +271,6 @@ docker {
   files tasks.installDist.outputs
 }
 
+distZip.dependsOn prepareBinary
 docker.dependsOn installDist
 check.dependsOn jacocoTestReport
