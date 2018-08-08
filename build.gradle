@@ -24,9 +24,8 @@ ext {
   organizationUrl = "http://quotidian-ennui.github.io"
   targetos = project.hasProperty('targetos') ? project.getProperty("targetos") : 'unix'
   targetJava = project.hasProperty('targetJava') ? project.getProperty("targetJava") : '/opt/java/jdk8/bin/java'
-  targetDeployDirectory = project.hasProperty('targetDeployDirectory') ? project.getProperty("targetDeployDirectory") : '/opt/interlok'
+  targetDeployDirectory = project.hasProperty('targetDeployDirectory') ? project.getProperty("targetDeployDirectory") : "/opt/interlok/${project.name}"
   binaryExtractDir = new File(project.buildDir, "binaries")
-
 }
 
 if (JavaVersion.current().isJava8Compatible()) {
@@ -108,7 +107,7 @@ dependencies {
   interlokRuntime ("org.apache.logging.log4j:log4j-slf4j-impl:2.9.1")
   interlokRuntime ("org.apache.logging.log4j:log4j-api:2.9.1")
 
-  interlokBinary ("com.adaptris:interlok-executable:1.0.0:$targetos") {changing=true}
+  interlokBinary ("com.adaptris:interlok-executable:1.0.0:$targetos@zip")
 
   testCompile ('junit:junit:4.12')
   testCompile ("com.adaptris:interlok-stubs:$interlokCoreVersion") { changing= true}
@@ -198,12 +197,12 @@ task prepareBinary(type: Copy, dependsOn: unzipBinaries) {
   rename { String fileName ->
     fileName.replace('adapter.lax.template', 'adapter.lax')
   }
-  filter(ReplaceTokens, tokens: [LAX_DIR: "$targetDeployDirectory/bin".toString()])
-  filter(ReplaceTokens, tokens: [LAX_CLASS_PATH: "../config;../lib/interlok-boot.jar;lax.jar"])
-  filter(ReplaceTokens, tokens: [LAX_NL_CURRENT_VM: targetJava])
-  filter(ReplaceTokens, tokens: [LAX_NL_JAVA_OPTION_ADDITIONAL: "-server -XX:+UseG1GC -Dnetworkaddress.cache.ttl=900 -Dnetworkaddress.cache.negative.ttl=10"])
-  filter(ReplaceTokens, tokens: [LAX_USER_DIR: targetDeployDirectory])
-  filter(ReplaceTokens, tokens: [LAX_ROOT_INSTALL_DIR: targetDeployDirectory])
+  filter(ReplaceTokens, tokens: ['lax.dir': "$targetDeployDirectory/bin".toString()])
+  filter(ReplaceTokens, tokens: ['lax.class.path': "../config;../lib/interlok-boot.jar;lax.jar"])
+  filter(ReplaceTokens, tokens: ['lax.nl.current.vm': targetJava.toString()])
+  filter(ReplaceTokens, tokens: ['lax.nl.java.option.additional': "-server -XX:+UseG1GC -Dnetworkaddress.cache.ttl=900 -Dnetworkaddress.cache.negative.ttl=10"])
+  filter(ReplaceTokens, tokens: ['lax.user.dir': targetDeployDirectory.toString()])
+  filter(ReplaceTokens, tokens: ['lax.root.install.dir': targetDeployDirectory.toString()])
 }
 
 artifacts {
@@ -211,6 +210,9 @@ artifacts {
   archives examplesJar
 }
 
+distZip {
+  archiveName="${project.name}.zip"
+}
 
 distributions {
   main {
