@@ -226,7 +226,7 @@ distributions {
         from jar
       }
       into('bin') {
-        from (binaryExtractDir)
+        from (prepareBinary)
         exclude "adapter.lax.template"
       }
       into('webapps') {
@@ -273,6 +273,5 @@ docker {
   files tasks.installDist.outputs
 }
 
-distZip.dependsOn prepareBinary
 docker.dependsOn installDist
 check.dependsOn jacocoTestReport
