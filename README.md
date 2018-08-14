@@ -17,6 +17,9 @@ any dependencies that you require (or a docker image).
 
 Even though it does not have any service-tester components; the ![service-tester](https://github.com/adaptris/interlok-service-tester-example) could be integrated into it. At the moment, because of possibly licensing issues, the interlok-binary artefact is in our private repositories; however you can easily generate your own version by just installing the adapter, and using the generated executables.
 
+* gradle docker // builds the docker image, based on adaptris/interlok:snapshot-alpine.
+* gradle installDist | assembleDist // creates the distribution.
+
 ## Why ![Interlok Hammer](https://img.shields.io/badge/certified-interlok%20hammer-red.svg)
 
 This is a real example of how easy it is to develop something for Interlok. 
