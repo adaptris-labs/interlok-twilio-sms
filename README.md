@@ -10,6 +10,12 @@ The suggested name was cuddly-octo-meme; but this will allow you to do this to s
   <text-body class="string-payload-data-input-parameter"/>
 </send-sms-via-twilio>
 ```
+## This branch
+
+This branch is working towards a build.gradle that allows you to "build a distribution" that contains your interlok config and
+any dependencies that you require.
+
+Even though it does not have any service-tester components; the ![service-tester](https://github.com/adaptris/interlok-service-tester-example) could be integrated into it. At the moment, because of possibly licensing issues, the interlok-binary artefact is in our private repositories; however you can easily generate your own version by just installing the adapter, and using the generated executables.
 
 ## Why ![Interlok Hammer](https://img.shields.io/badge/certified-interlok%20hammer-red.svg)
 
@@ -29,3 +35,4 @@ curl 'https://api.twilio.com/2010-04-01/Accounts/[AccountSID]/Messages.json' -X 
 
 * Because Twilio.init() is static, means you can't have multiple sids/auth-tokens in play; need to do something directly with the underlying REST client - might this be a generic "TwilioConnection".
 * Add proxy support, cos you know corporates love their proxies.
+
