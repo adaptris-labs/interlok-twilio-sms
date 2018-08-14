@@ -1,4 +1,4 @@
-# twilio-sms
+# twilio-sms [![Build Status](https://travis-ci.org/quotidian-ennui/interlok-twilio-sms.svg?branch=develop)](https://travis-ci.org/quotidian-ennui/interlok-twilio-sms)
 The suggested name was cuddly-octo-meme; but this will allow you to do this to send an SMS via twilio whereever you can use an Interlok service...
 
 ```
