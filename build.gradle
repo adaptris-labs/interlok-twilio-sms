@@ -1,17 +1,31 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+import org.apache.tools.ant.filters.*
+plugins {
+  id "java"
+  id "distribution"
+  id "maven"
+  id "maven-publish"
+  id "jacoco"
+  id "com.palantir.docker" version "0.19.2"
+}
+
 ext {
   interlokCoreVersion = project.hasProperty('interlokCoreVersion') ? project.getProperty('interlokCoreVersion') : '3.8-SNAPSHOT'
   releaseVersion = project.hasProperty('releaseVersion') ? project.getProperty('releaseVersion') : '3.8-SNAPSHOT'
-//  mavenPublishUrl = project.hasProperty('mavenPublishUrl') ? project.getProperty('mavenPublishUrl') : 'https://development.adaptris.net/nexus/content/repositories/snapshots'
-  mavenPublishUrl = project.hasProperty('mavenPublishUrl') ? project.getProperty('mavenPublishUrl') : 'https://development.adaptris.net/nexus/content/repositories/aurea-ba-plugin'
+  mavenPublishUrl = project.hasProperty('mavenPublishUrl') ? project.getProperty('mavenPublishUrl') : 'https://nexus.adaptris.net/nexus/content/repositories/snapshots'
   repoUsername = project.hasProperty('repoUsername') ? project.getProperty('repoUsername') : 'unknown'
   repoPassword = project.hasProperty('repoPassword') ? project.getProperty('repoPassword') : 'unknown'
   defaultNexusRepo = project.hasProperty('defaultNexusRepo') ? project.getProperty('defaultNexusRepo') : 'https://repo1.maven.org/maven2/'
-  javadocsBaseUrl = "https://development.adaptris.net/nexus/content/sites/javadocs/com/adaptris"
+  javadocsBaseUrl = "https://nexus.adaptris.net/nexus/content/sites/javadocs/com/adaptris"
   interlokJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : javadocsBaseUrl + "/interlok-core/" + interlokCoreVersion
   interlokCommonJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : javadocsBaseUrl + "/interlok-common/" + interlokCoreVersion
   componentName='Interlok/Twilio SMS'
-  organizationName = "Quotidian Ennui"
-  organizationUrl = "http://quotidian-ennui.github.io"
+  organizationName = "Adaptris Labs"
+  organizationUrl = "https://interlok.adaptris.net/"
+  targetos = project.hasProperty('targetos') ? project.getProperty("targetos") : 'unix'
+  targetJava = project.hasProperty('targetJava') ? project.getProperty("targetJava") : '/opt/java/jdk8/bin/java'
+  targetDeployDirectory = project.hasProperty('targetDeployDirectory') ? project.getProperty("targetDeployDirectory") : "/opt/interlok/${project.name}"
+  binaryExtractDir = new File(project.buildDir, "binaries")
 }
 
 if (JavaVersion.current().isJava8Compatible()) {
@@ -22,28 +36,37 @@ if (JavaVersion.current().isJava8Compatible()) {
   }
 }
 
-apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'maven-publish'
-apply plugin: "jacoco"
 
 sourceCompatibility = 1.8
-group   = 'io.github.quotidian-ennui'
+group   = 'io.github.adaptris-labs'
 version = releaseVersion
 def versionDir = "$buildDir/version"
 
 
+distTar.enabled=false
+distZip.enabled=true
+dockerfileZip.enabled=false
+
 repositories {
-  jcenter()
-  maven { url "https://repo1.maven.org/maven2/" }
-  maven { url "https://development.adaptris.net/nexus/content/groups/public" }
-  maven { url "https://development.adaptris.net/nexus/content/repositories/snapshots" }
-  maven { url "https://development.adaptris.net/nexus/content/repositories/releases" }
+  mavenCentral()
+  maven {
+      credentials {
+        username repoUsername
+        password repoPassword
+      }
+      url "https://nexus.adaptris.net/nexus/content/groups/private"
+    }
+  maven { url "https://nexus.adaptris.net/nexus/content/groups/public" }
+  maven { url "https://nexus.adaptris.net/nexus/content/repositories/snapshots" }
+  maven { url "https://nexus.adaptris.net/nexus/content/repositories/releases" }
 }
 
 
 configurations {
   javadoc {}
+  war{}
+  interlokRuntime{}
+  interlokBinary{}
   all*.exclude group: 'c3p0'
   all*.exclude group: 'commons-logging'
   all*.exclude group: 'javamail'
@@ -63,7 +86,31 @@ dependencies {
   compile ("com.adaptris:interlok-core:$interlokCoreVersion") { changing= true}
   compile ("com.adaptris:interlok-common:$interlokCoreVersion") { changing= true}
   compile ("org.slf4j:slf4j-api:1.7.25")
-  compile ("com.twilio.sdk:twilio:7.11+")
+  compile ("com.twilio.sdk:twilio:7.11+") {
+    exclude group:"org.apache.httpcomponents", module: "httpclient"
+    exclude group:"com.fasterxml.jackson.core", module: "jackson-databind"
+    exclude group:"com.fasterxml.jackson.core", module: "jackson-core"
+  }
+  compile ("org.apache.httpcomponents:httpclient:4.5.6")
+  compile ("com.fasterxml.jackson.core:jackson-databind:2.9.6")
+
+  annotationProcessor ("com.adaptris:interlok-common:$interlokCoreVersion") { changing= true}
+  testAnnotationProcessor ("com.adaptris:interlok-common:$interlokCoreVersion") { changing= true}
+
+  interlokRuntime ("com.adaptris:interlok-varsub:$interlokCoreVersion") { changing=true }
+  interlokRuntime ("com.adaptris:interlok-boot:$interlokCoreVersion") { changing=true }
+  interlokRuntime ("com.adaptris:interlok-xinclude:$interlokCoreVersion") { changing=true }
+  interlokRuntime ("com.adaptris:interlok-logging:$interlokCoreVersion") { changing=true }
+  interlokRuntime ("org.slf4j:slf4j-api:1.7.25")
+  interlokRuntime ("org.slf4j:jcl-over-slf4j:1.7.25")
+  interlokRuntime ("org.slf4j:jul-to-slf4j:1.7.25")
+  interlokRuntime ("org.apache.logging.log4j:log4j-core:2.9.1")
+  interlokRuntime ("org.apache.logging.log4j:log4j-1.2-api:2.9.1")
+  interlokRuntime ("org.apache.logging.log4j:log4j-slf4j-impl:2.9.1")
+  interlokRuntime ("org.apache.logging.log4j:log4j-api:2.9.1")
+
+  // Due to distribution, we can't include these.
+  // interlokBinary ("com.adaptris:interlok-executable:1.0.0:$targetos@zip")
 
   testCompile ('junit:junit:4.12')
   testCompile ("com.adaptris:interlok-stubs:$interlokCoreVersion") { changing= true}
@@ -73,7 +120,7 @@ dependencies {
   testCompile ("org.apache.logging.log4j:log4j-api:2.11.1")
 
   javadoc("com.adaptris:interlok-core-apt:$interlokCoreVersion") { changing= true}
-
+  war ("com.adaptris.ui:interlok:$interlokCoreVersion@war") {changing=true}
 }
 
 
@@ -103,7 +150,7 @@ task generateVersion {
       entry(key: 'component.name', value: componentName)
       entry(key: 'build.version', value: releaseVersion)
       entry(key: 'groupId', value: project.group)
-      entry(key: 'artifactId', value: project.name)      
+      entry(key: 'artifactId', value: project.name)
       entry(key: 'build.date', value: new Date().format('yyyy-MM-dd'))
     }
   }
@@ -121,7 +168,7 @@ javadoc {
 }
 
 jacoco {
-  toolVersion="0.7.7.201606060606"
+  toolVersion="0.8.1"
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
@@ -134,9 +181,65 @@ task examplesJar(type: Jar, dependsOn: test) {
   from new File(buildDir, '/examples')
 }
 
+task unzipBinaries(type: Copy) {
+  description 'Unzip Binary Artifacts'
+  group 'build'
+  project.configurations.interlokBinary.each {
+    from(zipTree(it))
+  }
+  exclude "META-INF/*", "META-INF"
+  into binaryExtractDir
+}
+
+task prepareBinary(type: Copy, dependsOn: unzipBinaries) {
+  description 'Rewrite the LAX file according to specifications'
+  group 'build'
+  delete(new File(binaryExtractDir, "adapter.lax"))
+  from file(new File(binaryExtractDir, "adapter.lax.template").getCanonicalPath())
+  into (binaryExtractDir)
+  rename { String fileName ->
+    fileName.replace('adapter.lax.template', 'adapter.lax')
+  }
+  filter(ReplaceTokens, tokens: ['lax.dir': "$targetDeployDirectory/bin".toString()])
+  filter(ReplaceTokens, tokens: ['lax.class.path': "../config;../lib/interlok-boot.jar;lax.jar"])
+  filter(ReplaceTokens, tokens: ['lax.nl.current.vm': targetJava.toString()])
+  filter(ReplaceTokens, tokens: ['lax.nl.java.option.additional': "-server -XX:+UseG1GC -Dnetworkaddress.cache.ttl=900 -Dnetworkaddress.cache.negative.ttl=10"])
+  filter(ReplaceTokens, tokens: ['lax.user.dir': targetDeployDirectory.toString()])
+  filter(ReplaceTokens, tokens: ['lax.root.install.dir': targetDeployDirectory.toString()])
+}
+
 artifacts {
   archives javadocJar
   archives examplesJar
+}
+
+distZip {
+  archiveName="${project.name}.zip"
+}
+
+distributions {
+  main {
+    contents {
+      from {
+        "$projectDir/src/main/interlok"
+      }
+      into('lib') {
+        from(project.configurations.runtime)
+        from(project.configurations.interlokRuntime)
+        from jar
+      }
+      // into('bin') {
+      //   from (prepareBinary)
+      //   exclude "adapter.lax.template"
+      // }
+      into('webapps') {
+        from(project.configurations.war)
+      }
+      rename '(.*)-[0-9]+\\..*.jar', '$1.jar'
+      rename '(.*)-[0-9]+\\..*.war', '$1.war'
+      duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+  }
 }
 
 publishing {
@@ -164,3 +267,14 @@ publishing {
     }
   }
 }
+
+
+docker {
+  name "adaptrislabs/twilio-sms"
+  tags 'latest'
+  pull true
+  files tasks.installDist.outputs
+}
+
+docker.dependsOn installDist
+check.dependsOn jacocoTestReport

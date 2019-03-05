@@ -1,0 +1,35 @@
+<adapter>
+  <unique-id>${adapter.unique.id}</unique-id>
+  <heartbeat-event-interval>
+    <unit>HOURS</unit>
+    <interval>24</interval>
+  </heartbeat-event-interval>
+  <channel-list>
+    <channel>
+      <unique-id>SMS</unique-id>
+      <workflow-list>
+        <standard-workflow>
+          <unique-id>Send</unique-id>
+          <consumer class="fs-consumer">
+            <destination class="configured-consume-destination">
+              <destination>${adapter.fs.consume.url}</destination>
+              <configured-thread-name>SendText</configured-thread-name>
+            </destination>
+            <poller class="random-interval-poller"/>
+            <create-dirs>true</create-dirs>
+          </consumer>
+          <service-collection class="service-list">
+            <services>
+              <send-sms-via-twilio>
+                <from>${twilio.sms.from}</from>
+                <to>${twilio.sms.to}</to>
+                <account-sid>${twilio.account.sid}</account-sid>
+                <auth-token>${twilio.account.auth}</auth-token>
+              </send-sms-via-twilio>
+            </services>
+          </service-collection>
+        </standard-workflow>
+      </workflow-list>
+    </channel>
+  </channel-list>
+</adapter>
