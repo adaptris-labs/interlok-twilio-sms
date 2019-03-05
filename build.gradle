@@ -20,8 +20,8 @@ ext {
   interlokJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : javadocsBaseUrl + "/interlok-core/" + interlokCoreVersion
   interlokCommonJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : javadocsBaseUrl + "/interlok-common/" + interlokCoreVersion
   componentName='Interlok/Twilio SMS'
-  organizationName = "Quotidian Ennui"
-  organizationUrl = "http://quotidian-ennui.github.io"
+  organizationName = "Adaptris Labs"
+  organizationUrl = "https://interlok.adaptris.net/"
   targetos = project.hasProperty('targetos') ? project.getProperty("targetos") : 'unix'
   targetJava = project.hasProperty('targetJava') ? project.getProperty("targetJava") : '/opt/java/jdk8/bin/java'
   targetDeployDirectory = project.hasProperty('targetDeployDirectory') ? project.getProperty("targetDeployDirectory") : "/opt/interlok/${project.name}"
@@ -38,7 +38,7 @@ if (JavaVersion.current().isJava8Compatible()) {
 
 
 sourceCompatibility = 1.8
-group   = 'io.github.quotidian-ennui'
+group   = 'io.github.adaptris-labs'
 version = releaseVersion
 def versionDir = "$buildDir/version"
 
@@ -270,7 +270,7 @@ publishing {
 
 
 docker {
-  name "lewinc/twilio-sms"
+  name "adaptrislabs/twilio-sms"
   tags 'latest'
   pull true
   files tasks.installDist.outputs
