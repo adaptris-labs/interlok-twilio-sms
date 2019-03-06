@@ -107,7 +107,7 @@ dependencies {
   interlokRuntime ("org.apache.logging.log4j:log4j-core:2.9.1")
   interlokRuntime ("org.apache.logging.log4j:log4j-1.2-api:2.9.1")
   interlokRuntime ("org.apache.logging.log4j:log4j-slf4j-impl:2.9.1")
-  interlokRuntime ("org.apache.logging.log4j:log4j-api:2.9.1")
+  interlokRuntime ("org.apache.logging.log4j:log4j-api:2.11.2")
 
   // Due to distribution, we can't include these.
   // interlokBinary ("com.adaptris:interlok-executable:1.0.0:$targetos@zip")
@@ -117,7 +117,7 @@ dependencies {
   testCompile ("org.apache.logging.log4j:log4j-core:2.11.1")
   testCompile ("org.apache.logging.log4j:log4j-1.2-api:2.11.1")
   testCompile ("org.apache.logging.log4j:log4j-slf4j-impl:2.11.1")
-  testCompile ("org.apache.logging.log4j:log4j-api:2.11.1")
+  testCompile ("org.apache.logging.log4j:log4j-api:2.11.2")
 
   javadoc("com.adaptris:interlok-core-apt:$interlokCoreVersion") { changing= true}
   war ("com.adaptris.ui:interlok:$interlokCoreVersion@war") {changing=true}
