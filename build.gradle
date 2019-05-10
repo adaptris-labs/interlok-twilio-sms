@@ -6,7 +6,7 @@ plugins {
   id "maven"
   id "maven-publish"
   id "jacoco"
-  id "com.palantir.docker" version "0.19.2"
+  id "com.palantir.docker" version "0.22.1"
 }
 
 ext {
