@@ -10,7 +10,7 @@ plugins {
 }
 
 ext {
-  interlokCoreVersion = project.hasProperty('interlokCoreVersion') ? project.getProperty('interlokCoreVersion') : '3.8-SNAPSHOT'
+  interlokCoreVersion = '3.8.4-RELEASE'
   releaseVersion = project.hasProperty('releaseVersion') ? project.getProperty('releaseVersion') : '3.8-SNAPSHOT'
   mavenPublishUrl = project.hasProperty('mavenPublishUrl') ? project.getProperty('mavenPublishUrl') : 'https://nexus.adaptris.net/nexus/content/repositories/snapshots'
   repoUsername = project.hasProperty('repoUsername') ? project.getProperty('repoUsername') : 'unknown'
@@ -19,13 +19,15 @@ ext {
   javadocsBaseUrl = "https://nexus.adaptris.net/nexus/content/sites/javadocs/com/adaptris"
   interlokJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : javadocsBaseUrl + "/interlok-core/" + interlokCoreVersion
   interlokCommonJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : javadocsBaseUrl + "/interlok-common/" + interlokCoreVersion
-  componentName='Interlok/Twilio SMS'
-  organizationName = "Adaptris Labs"
-  organizationUrl = "https://interlok.adaptris.net/"
   targetos = project.hasProperty('targetos') ? project.getProperty("targetos") : 'unix'
   targetJava = project.hasProperty('targetJava') ? project.getProperty("targetJava") : '/opt/java/jdk8/bin/java'
   targetDeployDirectory = project.hasProperty('targetDeployDirectory') ? project.getProperty("targetDeployDirectory") : "/opt/interlok/${project.name}"
   binaryExtractDir = new File(project.buildDir, "binaries")
+  componentName='Interlok/Twilio SMS'
+  organizationName = "Adaptris Labs"
+  organizationUrl = "https://interlok.adaptris.net/"
+  log4j2Version = '2.11.2'
+  slf4jVersion = '1.7.26'
 }
 
 if (JavaVersion.current().isJava8Compatible()) {
@@ -101,23 +103,23 @@ dependencies {
   interlokRuntime ("com.adaptris:interlok-boot:$interlokCoreVersion") { changing=true }
   interlokRuntime ("com.adaptris:interlok-xinclude:$interlokCoreVersion") { changing=true }
   interlokRuntime ("com.adaptris:interlok-logging:$interlokCoreVersion") { changing=true }
-  interlokRuntime ("org.slf4j:slf4j-api:1.7.25")
-  interlokRuntime ("org.slf4j:jcl-over-slf4j:1.7.25")
-  interlokRuntime ("org.slf4j:jul-to-slf4j:1.7.25")
-  interlokRuntime ("org.apache.logging.log4j:log4j-core:2.9.1")
-  interlokRuntime ("org.apache.logging.log4j:log4j-1.2-api:2.9.1")
-  interlokRuntime ("org.apache.logging.log4j:log4j-slf4j-impl:2.9.1")
-  interlokRuntime ("org.apache.logging.log4j:log4j-api:2.9.1")
+  interlokRuntime ("org.slf4j:slf4j-api:$slf4jVersion")
+  interlokRuntime ("org.slf4j:jcl-over-slf4j:$slf4jVersion")
+  interlokRuntime ("org.slf4j:jul-to-slf4j:$slf4jVersion")
+  interlokRuntime ("org.apache.logging.log4j:log4j-core:$log4j2Version")
+  interlokRuntime ("org.apache.logging.log4j:log4j-1.2-api:$log4j2Version")
+  interlokRuntime ("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
+  interlokRuntime ("org.apache.logging.log4j:log4j-api:$log4j2Version")
 
   // Due to distribution, we can't include these.
   // interlokBinary ("com.adaptris:interlok-executable:1.0.0:$targetos@zip")
 
   testCompile ('junit:junit:4.12')
   testCompile ("com.adaptris:interlok-stubs:$interlokCoreVersion") { changing= true}
-  testCompile ("org.apache.logging.log4j:log4j-core:2.11.1")
-  testCompile ("org.apache.logging.log4j:log4j-1.2-api:2.11.1")
-  testCompile ("org.apache.logging.log4j:log4j-slf4j-impl:2.11.1")
-  testCompile ("org.apache.logging.log4j:log4j-api:2.11.1")
+  testCompile ("org.apache.logging.log4j:log4j-core:$log4j2Version")
+  testCompile ("org.apache.logging.log4j:log4j-1.2-api:$log4j2Version")
+  testCompile ("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
+  testCompile ("org.apache.logging.log4j:log4j-api:$log4j2Version")
 
   javadoc("com.adaptris:interlok-core-apt:$interlokCoreVersion") { changing= true}
   war ("com.adaptris.ui:interlok:$interlokCoreVersion@war") {changing=true}
