@@ -280,4 +280,5 @@ docker {
 }
 
 docker.dependsOn installDist
-check.dependsOn jacocoTestReport,verifyGoogleJavaFormat
+# check.dependsOn jacocoTestReport,verifyGoogleJavaFormat
+check.dependsOn jacocoTestReport
