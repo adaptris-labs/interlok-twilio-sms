@@ -28,7 +28,7 @@ ext {
   organizationName = "Adaptris Labs"
   organizationUrl = "https://interlok.adaptris.net/"
   log4j2Version = '2.12.1'
-  slf4jVersion = '1.7.27'
+  slf4jVersion = '1.7.28'
 }
 
 if (JavaVersion.current().isJava8Compatible()) {
