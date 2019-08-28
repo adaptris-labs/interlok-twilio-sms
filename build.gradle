@@ -7,6 +7,7 @@ plugins {
   id "maven-publish"
   id "jacoco"
   id "com.palantir.docker" version "0.22.1"
+  id 'com.github.sherter.google-java-format' version '0.8'
 }
 
 ext {
@@ -279,4 +280,4 @@ docker {
 }
 
 docker.dependsOn installDist
-check.dependsOn jacocoTestReport
+check.dependsOn jacocoTestReport,verifyGoogleJavaFormat
