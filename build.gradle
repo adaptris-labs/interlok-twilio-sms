@@ -97,8 +97,10 @@ dependencies {
   compile ("org.apache.httpcomponents:httpclient:4.5.10")
   compile ("com.fasterxml.jackson.core:jackson-databind:2.10.0")
 
-  annotationProcessor ("com.adaptris:interlok-common:$interlokCoreVersion") { changing= true}
-  testAnnotationProcessor ("com.adaptris:interlok-common:$interlokCoreVersion") { changing= true}
+  // This is to make sure that the annotation processors are enabled during the
+  // compile phase.
+  annotationProcessor ("com.adaptris:interlok-core-apt:$interlokCoreVersion") { changing= true}
+  testAnnotationProcessor ("com.adaptris:interlok-core-apt:$interlokCoreVersion") { changing= true}
 
   interlokRuntime ("com.adaptris:interlok-varsub:$interlokCoreVersion") { changing=true }
   interlokRuntime ("com.adaptris:interlok-boot:$interlokCoreVersion") { changing=true }
@@ -122,6 +124,7 @@ dependencies {
   testCompile ("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
   testCompile ("org.apache.logging.log4j:log4j-api:$log4j2Version")
 
+  // To handle the custom javadoc taglets.
   javadoc("com.adaptris:interlok-core-apt:$interlokCoreVersion") { changing= true}
   war ("com.adaptris.ui:interlok:$interlokCoreVersion@war") {changing=true}
 }
@@ -171,7 +174,7 @@ javadoc {
 }
 
 jacoco {
-  toolVersion="0.8.1"
+  toolVersion="0.8.3"
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
