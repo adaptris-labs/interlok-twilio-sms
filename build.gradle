@@ -11,7 +11,7 @@ plugins {
 }
 
 ext {
-  interlokCoreVersion = '3.9.1-RELEASE'
+  interlokCoreVersion = '3.9.2-RELEASE'
   releaseVersion = project.hasProperty('releaseVersion') ? project.getProperty('releaseVersion') : '3.9-SNAPSHOT'
   mavenPublishUrl = project.hasProperty('mavenPublishUrl') ? project.getProperty('mavenPublishUrl') : 'https://nexus.adaptris.net/nexus/content/repositories/snapshots'
   repoUsername = project.hasProperty('repoUsername') ? project.getProperty('repoUsername') : 'set in gradle.properties'
