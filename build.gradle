@@ -93,7 +93,7 @@ dependencies {
     exclude group:"com.fasterxml.jackson.core", module: "jackson-core"
   }
   compile ("org.apache.httpcomponents:httpclient:4.5.10")
-  compile ("com.fasterxml.jackson.core:jackson-databind:2.10.0")
+  compile ("com.fasterxml.jackson.core:jackson-databind:2.10.1")
 
   // This is to make sure that the annotation processors are enabled during the
   // compile phase.
