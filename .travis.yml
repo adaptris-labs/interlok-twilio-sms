@@ -5,6 +5,8 @@ dist: trusty
 before_install:
   - sudo service haveged start
 
+script: ./gradlew -Dorg.gradle.console=plain --no-daemon clean check
+
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
