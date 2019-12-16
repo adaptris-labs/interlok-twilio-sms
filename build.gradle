@@ -8,8 +8,7 @@ plugins {
 }
 
 ext {
-  // interlokParentGradle = "https://raw.githubusercontent.com/adaptris-labs/interlok-build-parent/master/parent.gradle"
-  interlokParentGradle = "https://raw.githubusercontent.com/adaptris-labs/interlok-build-parent/custom-java/parent.gradle"
+  interlokParentGradle = "https://raw.githubusercontent.com/adaptris-labs/interlok-build-parent/master/build.gradle"
   interlokVersion = '3.9.2-RELEASE'
   interlokUiVersion = interlokVersion
   releaseVersion = '3.9-SNAPSHOT'
@@ -32,6 +31,10 @@ if (JavaVersion.current().isJava8Compatible()) {
   }
 }
 
+allprojects {
+  apply from: "${interlokParentGradle}"
+}
+
 
 sourceCompatibility = 1.8
 group   = 'io.github.adaptris-labs'
@@ -47,9 +50,6 @@ repositories {
 }
 
 configurations {
-  interlokRuntime{}
-  interlokTestRuntime{}
-  interlokJavadocs{}
   javadoc {}
 }
 
@@ -82,11 +82,6 @@ dependencies {
   testAnnotationProcessor ("com.adaptris:interlok-core-apt:$interlokVersion") { changing= true}
   // To handle the custom javadoc taglets.
   javadoc("com.adaptris:interlok-core-apt:$interlokVersion") { changing= true}
-}
-
-
-allprojects {
-  apply from: "${interlokParentGradle}"
 }
 
 jar {
@@ -122,6 +117,35 @@ task generateVersion {
   }
 }
 
+distributions {
+  main {
+    contents {
+      into('') {
+        from ("src/main/interlok")
+        exclude "config"
+      }
+      into('config') {
+        from(localizeConfig)
+      }
+      into('lib') {
+        from(project.configurations.runtime)
+        from(project.configurations.interlokRuntime)
+        from(serviceTesterDist)
+        from(jar)
+      }
+      into('webapps') {
+        from(interlokWarDist)
+      }
+      into('docs/javadocs') {
+        from(project.configurations.interlokJavadocs)
+      }
+      rename '(.*)-[0-9]+\\..*.jar', '$1.jar'
+      rename '(.*)-[0-9]+\\..*.war', '$1.war'
+      duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+  }
+}
+
 docker {
   name "adaptrislabs/twilio-sms"
   tags 'latest'
@@ -133,31 +157,4 @@ docker.dependsOn installDist
 assemble.dependsOn installDist
 installDist.dependsOn jar
 
-distributions {
-    main {
-        contents {
-            into('') {
-                from ("src/main/interlok")
-                exclude "config"
-            }
-            into('config') {
-                from(localizeConfig)
-            }
-            into('lib') {
-                from(project.configurations.runtime)
-                from(project.configurations.interlokRuntime)
-                from(serviceTesterDist)
-                from(jar)
-            }
-            into('webapps') {
-                from(project.configurations.interlokWar)
-            }
-            into('docs/javadocs') {
-              from(project.configurations.interlokJavadocs)
-            }
-            rename '(.*)-[0-9]+\\..*.jar', '$1.jar'
-            rename '(.*)-[0-9]+\\..*.war', '$1.war'
-            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        }
-    }
-}
+
