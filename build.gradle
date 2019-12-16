@@ -51,6 +51,8 @@ repositories {
 
 configurations {
   javadoc {}
+  // patch interlokRuntime to extend runtime, so we only declare our dependencies once.
+  interlokRuntime.extendsFrom runtime
 }
 
 configurations.all {
@@ -82,6 +84,11 @@ dependencies {
   testAnnotationProcessor ("com.adaptris:interlok-core-apt:$interlokVersion") { changing= true}
   // To handle the custom javadoc taglets.
   javadoc("com.adaptris:interlok-core-apt:$interlokVersion") { changing= true}
+
+  // patch interlokRuntime to include the custom jar.
+  interlokRuntime files(jar.archiveFile){
+    builtBy 'jar'
+  }
 }
 
 jar {
@@ -117,64 +124,12 @@ task generateVersion {
   }
 }
 
-distributions {
-  main {
-    contents {
-      into('') {
-        from ("src/main/interlok")
-        exclude "config"
-      }
-      into('config') {
-        from(localizeConfig)
-      }
-      into('lib') {
-        from(project.configurations.runtime)
-        from(project.configurations.interlokRuntime)
-        from(serviceTesterDist)
-        from(jar)
-      }
-      into('webapps') {
-        from(interlokWarDist)
-      }
-      into('docs/javadocs') {
-        from(project.configurations.interlokJavadocs)
-      }
-      rename '(.*)-[0-9]+\\..*.jar', '$1.jar'
-      rename '(.*)-[0-9]+\\..*.war', '$1.war'
-      duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    }
-  }
-}
-
-// Since we have custom code in play, we have to "patch" the verifyLauncherJar + serviceTesterLauncher configurations...
+// Since we have custom code in play, we have to "patch" the verifyLauncherJar + serviceTesterLauncher configurations to depend on jar.
 verifyLauncherJar.configure {
-    ext.launcherClasspath = { ->
-      def verifyLibs = [configurations.interlokRuntime.collect { "file:///" + it.getCanonicalPath() }.join(' '),
-              configurations.interlokVerify.collect { "file:///" + it.getCanonicalPath() + "/" }.join(' '),
-              configurations.runtime.collect { "file:///" + it.getCanonicalPath() }.join(' '),
-              "file:///" + jar.archivePath.getCanonicalPath()]
-      return verifyLibs.join(' ')
-    }
-    appendix = "verify-launcher"
-    manifest {
-        attributes ("Class-Path": launcherClasspath())
-    }
     dependsOn jar
 }
 
 serviceTesterLauncherJar.configure {
-    ext.launcherClasspath = { ->
-      def testerLibs = [configurations.interlokRuntime.collect { "file:///" + it.getCanonicalPath() }.join(' '),
-              configurations.interlokTestRuntime.collect { "file:///" + it.getCanonicalPath() }.join(' '),
-              configurations.runtime.collect { "file:///" + it.getCanonicalPath() }.join(' '),
-              "file:///" + jar.archivePath.getCanonicalPath(),
-              "file:///" + new File("$projectDir/src/test/resources").getCanonicalPath() + "/"]
-      return testerLibs.join(' ')
-    }
-    appendix = "service-tester-launcher"
-    manifest {
-      attributes ("Class-Path": launcherClasspath())
-    }
     dependsOn jar
 }
 
@@ -188,5 +143,3 @@ docker {
 docker.dependsOn installDist
 assemble.dependsOn installDist
 installDist.dependsOn jar
-
-
