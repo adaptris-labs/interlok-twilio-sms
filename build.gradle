@@ -102,13 +102,13 @@ jar {
   }
 }
 
+// Generate the META-INF/adaptris-version file since we want to have it reported in the UI.
 sourceSets {
   main {
     output.dir(versionDir, builtBy: 'generateVersion')
   }
 }
 
-// Generate the META-INF/adaptris-version file
 task generateVersion {
   doLast {
     def versionFile = new File(new File(versionDir, 'META-INF'), 'adaptris-version')
