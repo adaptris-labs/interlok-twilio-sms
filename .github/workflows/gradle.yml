@@ -17,6 +17,12 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
+    - name: Setup Ubuntu
+      run: |
+        sudo apt-get -y -q update
+        sudo apt-get -y -q install haveged
+        sudo systemctl enable haveged
+        sudo systemctl restart haveged
     - name: Gradle Wrapper Cache
       uses: actions/cache@v1
       with:
