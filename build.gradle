@@ -21,6 +21,8 @@ ext {
   organizationUrl = "https://interlok.adaptris.net/"
   log4j2Version = '2.12.1'
   slf4jVersion = '1.7.29'
+  // Custom properties to make verify work, since these are not checked in
+  interlokVerifySystemProperties = [ 'twilio.account.sid': 'Dummy', 'twilio.account.auth': 'Dummy', 'twilio.sms.from': '+4412345678', 'twilio.sms.to': '+4412345678' ]
 }
 
 if (JavaVersion.current().isJava8Compatible()) {
