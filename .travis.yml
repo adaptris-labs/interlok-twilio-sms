@@ -7,9 +7,6 @@ before_install:
 
 script: ./gradlew -Dorg.gradle.console=plain --no-daemon clean check
 
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
-
 jdk:
   - openjdk8
 
