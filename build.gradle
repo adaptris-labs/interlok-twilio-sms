@@ -146,6 +146,38 @@ distributions {
   }
 }
 
+// Since we have custom code in play, we have to "patch" the verifyLauncherJar + serviceTesterLauncher configurations...
+verifyLauncherJar.configure {
+    ext.launcherClasspath = { ->
+      def verifyLibs = [configurations.interlokRuntime.collect { "file:///" + it.getCanonicalPath() }.join(' '),
+              configurations.interlokVerify.collect { "file:///" + it.getCanonicalPath() + "/" }.join(' '),
+              configurations.runtime.collect { "file:///" + it.getCanonicalPath() }.join(' '),
+              "file:///" + jar.archivePath.getCanonicalPath()]
+      return verifyLibs.join(' ')
+    }
+    appendix = "verify-launcher"
+    manifest {
+        attributes ("Class-Path": launcherClasspath())
+    }
+    dependsOn jar
+}
+
+serviceTesterLauncherJar.configure {
+    ext.launcherClasspath = { ->
+      def testerLibs = [configurations.interlokRuntime.collect { "file:///" + it.getCanonicalPath() }.join(' '),
+              configurations.interlokTestRuntime.collect { "file:///" + it.getCanonicalPath() }.join(' '),
+              configurations.runtime.collect { "file:///" + it.getCanonicalPath() }.join(' '),
+              "file:///" + jar.archivePath.getCanonicalPath(),
+              "file:///" + new File("$projectDir/src/test/resources").getCanonicalPath() + "/"]
+      return testerLibs.join(' ')
+    }
+    appendix = "service-tester-launcher"
+    manifest {
+      attributes ("Class-Path": launcherClasspath())
+    }
+    dependsOn jar
+}
+
 docker {
   name "adaptrislabs/twilio-sms"
   tags 'latest'
