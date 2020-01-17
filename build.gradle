@@ -6,7 +6,7 @@ plugins {
   id "maven"
   id "maven-publish"
   id "jacoco"
-  id "com.palantir.docker" version "0.22.2"
+  id "com.palantir.docker" version "0.24.0"
   // id 'com.github.sherter.google-java-format' version '0.8'
 }
 
