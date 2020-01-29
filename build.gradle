@@ -4,12 +4,12 @@ plugins {
   id "java"
   id "distribution"
   id "jacoco"
-  id "com.palantir.docker" version "0.22.1"
+  id "com.palantir.docker" version "0.24.0"
 }
 
 ext {
   interlokParentGradle = "https://raw.githubusercontent.com/adaptris-labs/interlok-build-parent/master/build.gradle"
-  interlokVersion = '3.9.2-RELEASE'
+  interlokVersion = '3.9.3-RELEASE'
   interlokUiVersion = interlokVersion
   releaseVersion = '3.9-SNAPSHOT'
   nexusBaseUrl  = 'https://nexus.adaptris.net'
@@ -70,8 +70,8 @@ dependencies {
     exclude group:"com.fasterxml.jackson.core", module: "jackson-databind"
     exclude group:"com.fasterxml.jackson.core", module: "jackson-core"
   }
-  compile ("org.apache.httpcomponents:httpclient:4.5.10")
-  compile ("com.fasterxml.jackson.core:jackson-databind:2.10.1")
+  compile ("org.apache.httpcomponents:httpclient:4.5.11")
+  compile ("com.fasterxml.jackson.core:jackson-databind:2.10.2")
 
   testCompile ('junit:junit:4.12')
   testCompile ("com.adaptris:interlok-stubs:$interlokVersion") { changing= true}
