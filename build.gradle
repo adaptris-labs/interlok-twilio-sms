@@ -3,31 +3,26 @@ import org.apache.tools.ant.filters.*
 plugins {
   id "java"
   id "distribution"
-  id "maven"
-  id "maven-publish"
   id "jacoco"
   id "com.palantir.docker" version "0.24.0"
-  // id 'com.github.sherter.google-java-format' version '0.8'
 }
 
 ext {
-  interlokCoreVersion = '3.9.3-RELEASE'
-  releaseVersion = project.hasProperty('releaseVersion') ? project.getProperty('releaseVersion') : '3.9-SNAPSHOT'
-  mavenPublishUrl = project.hasProperty('mavenPublishUrl') ? project.getProperty('mavenPublishUrl') : 'https://nexus.adaptris.net/nexus/content/repositories/snapshots'
-  repoUsername = project.hasProperty('repoUsername') ? project.getProperty('repoUsername') : 'set in gradle.properties'
-  repoPassword = project.hasProperty('repoPassword') ? project.getProperty('repoPassword') : 'set in gradle.properties'
-  javadocsBaseUrl = "https://nexus.adaptris.net/nexus/content/sites/javadocs/com/adaptris"
-  interlokJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : javadocsBaseUrl + "/interlok-core/" + interlokCoreVersion
-  interlokCommonJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : javadocsBaseUrl + "/interlok-common/" + interlokCoreVersion
-  targetos = project.hasProperty('targetos') ? project.getProperty("targetos") : 'unix'
-  targetJava = project.hasProperty('targetJava') ? project.getProperty("targetJava") : '/opt/java/jdk8/bin/java'
-  targetDeployDirectory = project.hasProperty('targetDeployDirectory') ? project.getProperty("targetDeployDirectory") : "/opt/interlok/${project.name}"
-  binaryExtractDir = new File(project.buildDir, "binaries")
+  interlokParentGradle = "https://raw.githubusercontent.com/adaptris-labs/interlok-build-parent/master/build.gradle"
+  interlokVersion = '3.9.3-RELEASE'
+  interlokUiVersion = interlokVersion
+  releaseVersion = '3.9-SNAPSHOT'
+  nexusBaseUrl  = 'https://nexus.adaptris.net'
+  javadocsBaseUrl = "${nexusBaseUrl}/nexus/content/sites/javadocs/com/adaptris"
+  interlokJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : javadocsBaseUrl + "/interlok-core/" + interlokVersion
+  interlokCommonJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : javadocsBaseUrl + "/interlok-common/" + interlokVersion
   componentName='Interlok/Twilio SMS'
   organizationName = "Adaptris Labs"
   organizationUrl = "https://interlok.adaptris.net/"
-  log4j2Version = '2.13.0'
-  slf4jVersion = '1.7.30'
+  log4j2Version = '2.12.1'
+  slf4jVersion = '1.7.29'
+  // Custom properties to make verify work, since these are not checked in
+  interlokVerifySystemProperties = [ 'twilio.account.sid': 'Dummy', 'twilio.account.auth': 'Dummy', 'twilio.sms.from': '+4412345678', 'twilio.sms.to': '+4412345678' ]
 }
 
 if (JavaVersion.current().isJava8Compatible()) {
@@ -38,45 +33,28 @@ if (JavaVersion.current().isJava8Compatible()) {
   }
 }
 
+allprojects {
+  apply from: "${interlokParentGradle}"
+}
+
 
 sourceCompatibility = 1.8
 group   = 'io.github.adaptris-labs'
 version = releaseVersion
 def versionDir = "$buildDir/version"
 
-
-distTar.enabled=false
-distZip.enabled=true
 dockerfileZip.enabled=false
 
 repositories {
-  mavenCentral()
-  maven {
-      credentials {
-        username repoUsername
-        password repoPassword
-      }
-      url "https://nexus.adaptris.net/nexus/content/groups/private"
-    }
-  maven { url "https://nexus.adaptris.net/nexus/content/groups/public" }
-  maven { url "https://nexus.adaptris.net/nexus/content/groups/interlok" }
+    mavenCentral()
+    maven { url "${nexusBaseUrl}/nexus/content/groups/public" }
+    maven { url "${nexusBaseUrl}/nexus/content/groups/interlok" }
 }
-
 
 configurations {
   javadoc {}
-  war{}
-  interlokRuntime{}
-  interlokBinary{}
-  all*.exclude group: 'c3p0'
-  all*.exclude group: 'commons-logging'
-  all*.exclude group: 'javamail'
-  all*.exclude group: 'javax.mail', module: 'mail'
-  all*.exclude group: 'org.glassfish.hk2.external'
-  all*.exclude group: 'xalan', module: 'xalan'
-  all*.exclude group: 'net.sf.saxon', module: 'saxon'
-  all*.exclude group: 'org.codehaus.woodstox'
-  all*.exclude group: 'org.eclipse.jetty.orbit', module: 'javax.mail.glassfish'
+  // patch interlokRuntime to extend runtime, so we only declare our dependencies once.
+  interlokRuntime.extendsFrom runtime
 }
 
 configurations.all {
@@ -84,8 +62,8 @@ configurations.all {
 }
 
 dependencies {
-  compile ("com.adaptris:interlok-core:$interlokCoreVersion") { changing= true}
-  compile ("com.adaptris:interlok-common:$interlokCoreVersion") { changing= true}
+  compile ("com.adaptris:interlok-core:$interlokVersion") { changing= true}
+  compile ("com.adaptris:interlok-common:$interlokVersion") { changing= true}
   compile ("org.slf4j:slf4j-api:$slf4jVersion")
   compile ("com.twilio.sdk:twilio:7.11+") {
     exclude group:"org.apache.httpcomponents", module: "httpclient"
@@ -95,38 +73,25 @@ dependencies {
   compile ("org.apache.httpcomponents:httpclient:4.5.11")
   compile ("com.fasterxml.jackson.core:jackson-databind:2.10.2")
 
-  // This is to make sure that the annotation processors are enabled during the
-  // compile phase.
-  annotationProcessor ("com.adaptris:interlok-core-apt:$interlokCoreVersion") { changing= true}
-  testAnnotationProcessor ("com.adaptris:interlok-core-apt:$interlokCoreVersion") { changing= true}
-
-  interlokRuntime ("com.adaptris:interlok-varsub:$interlokCoreVersion") { changing=true }
-  interlokRuntime ("com.adaptris:interlok-boot:$interlokCoreVersion") { changing=true }
-  interlokRuntime ("com.adaptris:interlok-xinclude:$interlokCoreVersion") { changing=true }
-  interlokRuntime ("com.adaptris:interlok-logging:$interlokCoreVersion") { changing=true }
-  interlokRuntime ("org.slf4j:slf4j-api:$slf4jVersion")
-  interlokRuntime ("org.slf4j:jcl-over-slf4j:$slf4jVersion")
-  interlokRuntime ("org.slf4j:jul-to-slf4j:$slf4jVersion")
-  interlokRuntime ("org.apache.logging.log4j:log4j-core:$log4j2Version")
-  interlokRuntime ("org.apache.logging.log4j:log4j-1.2-api:$log4j2Version")
-  interlokRuntime ("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
-  interlokRuntime ("org.apache.logging.log4j:log4j-api:$log4j2Version")
-
-  // Due to distribution, we can't include these.
-  // interlokBinary ("com.adaptris:interlok-executable:1.0.0:$targetos@zip")
-
-  testCompile ('junit:junit:4.13')
-  testCompile ("com.adaptris:interlok-stubs:$interlokCoreVersion") { changing= true}
+  testCompile ('junit:junit:4.12')
+  testCompile ("com.adaptris:interlok-stubs:$interlokVersion") { changing= true}
   testCompile ("org.apache.logging.log4j:log4j-core:$log4j2Version")
   testCompile ("org.apache.logging.log4j:log4j-1.2-api:$log4j2Version")
   testCompile ("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
   testCompile ("org.apache.logging.log4j:log4j-api:$log4j2Version")
 
+  // This is to make sure that the annotation processors are enabled during the
+  // compile phase.
+  annotationProcessor ("com.adaptris:interlok-core-apt:$interlokVersion") { changing= true}
+  testAnnotationProcessor ("com.adaptris:interlok-core-apt:$interlokVersion") { changing= true}
   // To handle the custom javadoc taglets.
-  javadoc("com.adaptris:interlok-core-apt:$interlokCoreVersion") { changing= true}
-  war ("com.adaptris.ui:interlok:$interlokCoreVersion@war") {changing=true}
-}
+  javadoc("com.adaptris:interlok-core-apt:$interlokVersion") { changing= true}
 
+  // patch interlokRuntime to include the custom jar.
+  interlokRuntime files(jar.archiveFile){
+    builtBy 'jar'
+  }
+}
 
 jar {
   manifest {
@@ -139,13 +104,13 @@ jar {
   }
 }
 
-
+// Generate the META-INF/adaptris-version file since we want to have it reported in the UI.
 sourceSets {
   main {
     output.dir(versionDir, builtBy: 'generateVersion')
   }
 }
-// Generate the META-INF/adaptris-version file
+
 task generateVersion {
   doLast {
     def versionFile = new File(new File(versionDir, 'META-INF'), 'adaptris-version')
@@ -156,118 +121,19 @@ task generateVersion {
       entry(key: 'groupId', value: project.group)
       entry(key: 'artifactId', value: project.name)
       entry(key: 'build.date', value: new Date().format('yyyy-MM-dd'))
+      entry(key: 'build.info', value:  new Date().format('HH:mm:ss z'))
     }
   }
 }
 
-javadoc {
-  configure(options) {
-      links = [
-        interlokJavadocs,
-        interlokCommonJavadocs,
-      ]
-    taglets = ["com.adaptris.taglet.ConfigTaglet", "com.adaptris.taglet.LicenseTaglet"]
-    options.addStringOption "tagletpath", configurations.javadoc.asPath
-  }
+// Since we have custom code in play, we have to "patch" the verifyLauncherJar + serviceTesterLauncher configurations to depend on jar.
+verifyLauncherJar.configure {
+    dependsOn jar
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-  classifier = 'javadoc'
-  from javadoc.destinationDir
+serviceTesterLauncherJar.configure {
+    dependsOn jar
 }
-
-task examplesJar(type: Jar, dependsOn: test) {
-  classifier = 'examples'
-  from new File(buildDir, '/examples')
-}
-
-task unzipBinaries(type: Copy) {
-  description 'Unzip Binary Artifacts'
-  group 'build'
-  project.configurations.interlokBinary.each {
-    from(zipTree(it))
-  }
-  exclude "META-INF/*", "META-INF"
-  into binaryExtractDir
-}
-
-task prepareBinary(type: Copy, dependsOn: unzipBinaries) {
-  description 'Rewrite the LAX file according to specifications'
-  group 'build'
-  delete(new File(binaryExtractDir, "adapter.lax"))
-  from file(new File(binaryExtractDir, "adapter.lax.template").getCanonicalPath())
-  into (binaryExtractDir)
-  rename { String fileName ->
-    fileName.replace('adapter.lax.template', 'adapter.lax')
-  }
-  filter(ReplaceTokens, tokens: ['lax.dir': "$targetDeployDirectory/bin".toString()])
-  filter(ReplaceTokens, tokens: ['lax.class.path': "../config;../lib/interlok-boot.jar;lax.jar"])
-  filter(ReplaceTokens, tokens: ['lax.nl.current.vm': targetJava.toString()])
-  filter(ReplaceTokens, tokens: ['lax.nl.java.option.additional': "-server -XX:+UseG1GC -Dnetworkaddress.cache.ttl=900 -Dnetworkaddress.cache.negative.ttl=10"])
-  filter(ReplaceTokens, tokens: ['lax.user.dir': targetDeployDirectory.toString()])
-  filter(ReplaceTokens, tokens: ['lax.root.install.dir': targetDeployDirectory.toString()])
-}
-
-artifacts {
-  archives javadocJar
-  archives examplesJar
-}
-
-distZip {
-  archiveName="${project.name}.zip"
-}
-
-distributions {
-  main {
-    contents {
-      from {
-        "$projectDir/src/main/interlok"
-      }
-      into('lib') {
-        from(project.configurations.runtime)
-        from(project.configurations.interlokRuntime)
-        from jar
-      }
-      // into('bin') {
-      //   from (prepareBinary)
-      //   exclude "adapter.lax.template"
-      // }
-      into('webapps') {
-        from(project.configurations.war)
-      }
-      rename '(.*)-[0-9]+\\..*.jar', '$1.jar'
-      rename '(.*)-[0-9]+\\..*.war', '$1.war'
-      duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    }
-  }
-}
-
-publishing {
-  publications {
-    mavenJava(MavenPublication) {
-      from components.java
-
-      artifact javadocJar { classifier "javadoc" }
-      artifact examplesJar { classifier "examples" }
-
-      pom.withXml {
-        asNode().appendNode("description", "Send SMS via your Twilio account")
-        def properties = asNode().appendNode("properties")
-        properties.appendNode("target", "3.6.6+")
-      }
-    }
-  }
-  repositories {
-    maven {
-      credentials {
-        username repoUsername
-        password repoPassword
-      }
-      url mavenPublishUrl
-    }
-  }
-}
-
 
 docker {
   name "adaptrislabs/twilio-sms"
@@ -277,5 +143,5 @@ docker {
 }
 
 docker.dependsOn installDist
-// check.dependsOn jacocoTestReport,verifyGoogleJavaFormat
-check.dependsOn jacocoTestReport
+assemble.dependsOn installDist
+installDist.dependsOn jar

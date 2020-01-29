@@ -1,4 +1,6 @@
-# twilio-sms [![Build Status](https://travis-ci.org/quotidian-ennui/interlok-twilio-sms.svg?branch=develop)](https://travis-ci.org/quotidian-ennui/interlok-twilio-sms)
+# twilio-sms
+[![Build Status](https://travis-ci.org/adaptris-labs/interlok-twilio-sms.svg?branch=develop)](https://travis-ci.org/adaptris-labs/interlok-twilio-sms) [![Actions Status](https://github.com/adaptris-labs/interlok-twilio-sms/workflows/assemble/badge.svg)](https://github.com/adaptris-labs/interlok-twilio-sms/actions)
+
 The suggested name was cuddly-octo-meme; but this will allow you to do this to send an SMS via twilio whereever you can use an Interlok service...
 
 ```
@@ -13,18 +15,18 @@ The suggested name was cuddly-octo-meme; but this will allow you to do this to s
 ## This branch
 
 This branch is working towards a build.gradle that allows you to "build a distribution" that contains your interlok config and
-any dependencies that you require (or a docker image).
+any dependencies that you require (or a docker image). This uses the [parent gradle concept](https://github.com/adaptris-labs/interlok-build-parent) to hopefully simplify the build.grade sufficiently that it is easy to use.
 
-Even though it does not have any service-tester components; the ![service-tester](https://github.com/adaptris/interlok-service-tester-example) could be integrated into it. At the moment, because of possibly licensing issues, the interlok-binary artefact is in our private repositories; however you can easily generate your own version by just installing the adapter, and using the generated executables.
+Even though it does not have any service-tester components; the ![service-tester](https://github.com/adaptris/interlok-service-tester-example) could be integrated into it.
 
+* gradle clean check assemble // builds the distribution, and runs checks on the configuration.
 * gradle docker // builds the docker image, based on adaptris/interlok:snapshot-alpine.
-* gradle installDist | assembleDist // creates the distribution.
 
 ## Why ![Interlok Hammer](https://img.shields.io/badge/certified-interlok%20hammer-red.svg)
 
-This is a real example of how easy it is to develop something for Interlok. 
+This is a real example of how easy it is to develop something for Interlok.
 * you might want to notify people when a message goes bad.
-* Yeah, you could use the Twilio REST API instead... 
+* Yeah, you could use the Twilio REST API instead...
 
 ```
 curl 'https://api.twilio.com/2010-04-01/Accounts/[AccountSID]/Messages.json' -X POST \

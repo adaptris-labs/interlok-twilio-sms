@@ -5,8 +5,7 @@ dist: trusty
 before_install:
   - sudo service haveged start
 
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
+script: ./gradlew -Dorg.gradle.console=plain --no-daemon clean check
 
 jdk:
   - openjdk8
