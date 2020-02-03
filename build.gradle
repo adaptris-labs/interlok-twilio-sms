@@ -73,7 +73,7 @@ dependencies {
   compile ("org.apache.httpcomponents:httpclient:4.5.11")
   compile ("com.fasterxml.jackson.core:jackson-databind:2.10.2")
 
-  testCompile ('junit:junit:4.12')
+  testCompile ('junit:junit:4.13')
   testCompile ("com.adaptris:interlok-stubs:$interlokVersion") { changing= true}
   testCompile ("org.apache.logging.log4j:log4j-core:$log4j2Version")
   testCompile ("org.apache.logging.log4j:log4j-1.2-api:$log4j2Version")
