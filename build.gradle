@@ -9,9 +9,9 @@ plugins {
 
 ext {
   interlokParentGradle = "https://raw.githubusercontent.com/adaptris-labs/interlok-build-parent/master/build.gradle"
-  interlokVersion = '3.9.3-RELEASE'
+  interlokVersion = '3.10.0-RELEASE'
   interlokUiVersion = interlokVersion
-  releaseVersion = '3.9-SNAPSHOT'
+  releaseVersion = '3.10-SNAPSHOT'
   nexusBaseUrl  = 'https://nexus.adaptris.net'
   javadocsBaseUrl = "${nexusBaseUrl}/nexus/content/sites/javadocs/com/adaptris"
   interlokJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : javadocsBaseUrl + "/interlok-core/" + interlokVersion
@@ -73,12 +73,9 @@ dependencies {
   compile ("org.apache.httpcomponents:httpclient:4.5.12")
   compile ("com.fasterxml.jackson.core:jackson-databind:2.10.3")
 
-  testCompile ('junit:junit:4.13')
-  testCompile ("com.adaptris:interlok-stubs:$interlokVersion") { changing= true}
-  testCompile ("org.apache.logging.log4j:log4j-core:$log4j2Version")
-  testCompile ("org.apache.logging.log4j:log4j-1.2-api:$log4j2Version")
-  testCompile ("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
-  testCompile ("org.apache.logging.log4j:log4j-api:$log4j2Version")
+  testImplementation ('junit:junit:4.13')
+  testImplementation ("com.adaptris:interlok-stubs:$interlokVersion") { changing= true}
+  testImplementation ("org.slf4j:slf4j-simple:$slf4jVersion")
 
   // This is to make sure that the annotation processors are enabled during the
   // compile phase.

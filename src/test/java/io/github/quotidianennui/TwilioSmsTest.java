@@ -17,4 +17,9 @@ public class TwilioSmsTest extends ServiceCase {
     }
   }
 
+  @Override
+  public boolean isAnnotatedForJunit4() {
+    return true;
+  }
+
 }
