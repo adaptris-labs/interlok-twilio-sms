@@ -7,6 +7,9 @@ before_install:
 
 script: ./gradlew -Dorg.gradle.console=plain --no-daemon clean check sonarqube
 
+git:
+  depth: false
+
 jdk:
   - openjdk8
 
