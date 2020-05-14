@@ -11,6 +11,8 @@ jdk:
   - openjdk8
 
 addons:
+  sonarcloud:
+    organization: adaptris-labs
   apt:
     packages:
       - haveged
