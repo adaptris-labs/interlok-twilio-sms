@@ -11,8 +11,7 @@ plugins {
 
 
 ext {
-  interlokParentGradle = 'https://raw.githubusercontent.com/adaptris-labs/interlok-build-parent/develop/build.gradle'
-  interlokParentBaseUrl = 'https://raw.githubusercontent.com/adaptris-labs/interlok-build-parent/develop'
+  interlokParentGradle = 'https://raw.githubusercontent.com/adaptris-labs/interlok-build-parent/master/build.gradle'
   interlokVersion = '3.10.1-RELEASE'
   interlokUiVersion = interlokVersion
   releaseVersion = '3.10-SNAPSHOT'
