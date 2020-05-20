@@ -2,12 +2,9 @@ package io.github.quotidianennui;
 
 import static org.apache.commons.lang3.StringUtils.abbreviate;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
-
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.NotBlank;
-
 import com.adaptris.annotation.ComponentProfile;
 import com.adaptris.annotation.DisplayOrder;
 import com.adaptris.annotation.InputFieldHint;
@@ -16,9 +13,9 @@ import com.adaptris.core.CoreException;
 import com.adaptris.core.ServiceException;
 import com.adaptris.core.ServiceImp;
 import com.adaptris.core.common.StringPayloadDataInputParameter;
-import com.adaptris.core.util.Args;
 import com.adaptris.core.util.ExceptionHelper;
 import com.adaptris.interlok.config.DataInputParameter;
+import com.adaptris.interlok.util.Args;
 import com.adaptris.security.exc.PasswordException;
 import com.adaptris.security.password.Password;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
@@ -69,10 +66,10 @@ public class TwilioSmsService extends ServiceImp {
   public void doService(AdaptrisMessage msg) throws ServiceException {
     try {
       String msgBody = abbreviate(defaultIfBlank(getTextBody().extract(msg), ""), MAX_LEN);
-      PhoneNumber from = new PhoneNumber(msg.resolve(getFrom()));
-      PhoneNumber to = new PhoneNumber(msg.resolve(getTo()));
-      Message txtMsg = Message.creator(to, from, msgBody).create();
-      log.trace("Message [{}] sent to [{}]", txtMsg.getSid(), to);
+      PhoneNumber actuallyFrom = new PhoneNumber(msg.resolve(getFrom()));
+      PhoneNumber actuallyTo = new PhoneNumber(msg.resolve(getTo()));
+      Message txtMsg = Message.creator(actuallyTo, actuallyFrom, msgBody).create();
+      log.trace("Message [{}] sent to [{}]", txtMsg.getSid(), actuallyTo);
     }
     catch (Exception e) {
       throw ExceptionHelper.wrapServiceException(e);
