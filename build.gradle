@@ -5,7 +5,7 @@ plugins {
   id "distribution"
   id "jacoco"
   id "com.palantir.docker" version "0.25.0"
-  id 'com.github.spotbugs' version '4.5.0'
+  id 'com.github.spotbugs' version '4.5.1'
   id "org.sonarqube" version "3.0"
 }
 
@@ -73,7 +73,7 @@ dependencies {
     exclude group:"com.fasterxml.jackson.core", module: "jackson-core"
   }
   compile ("org.apache.httpcomponents:httpclient:4.5.12")
-  compile ("com.fasterxml.jackson.core:jackson-databind:2.11.2")
+  compile ("com.fasterxml.jackson.core:jackson-databind:2.11.3")
 
   testImplementation ('junit:junit:4.13')
   testImplementation ("com.adaptris:interlok-stubs:$interlokVersion") {
