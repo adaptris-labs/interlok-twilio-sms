@@ -5,16 +5,16 @@ plugins {
   id "distribution"
   id "jacoco"
   id "com.palantir.docker" version "0.25.0"
-  id 'com.github.spotbugs' version '4.5.1'
+  id 'com.github.spotbugs' version '4.6.0'
   id "org.sonarqube" version "3.0"
 }
 
 
 ext {
   interlokParentGradle = 'https://raw.githubusercontent.com/adaptris-labs/interlok-build-parent/master/build.gradle'
-  interlokVersion = '3.11.0-RELEASE'
+  interlokVersion = '3.11.1-RELEASE'
   interlokUiVersion = interlokVersion
-  releaseVersion = '3.10-SNAPSHOT'
+  releaseVersion = '3.11-SNAPSHOT'
   nexusBaseUrl  = 'https://nexus.adaptris.net'
   javadocsBaseUrl = "${nexusBaseUrl}/nexus/content/sites/javadocs/com/adaptris"
   interlokJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : javadocsBaseUrl + "/interlok-core/" + interlokVersion
@@ -73,7 +73,7 @@ dependencies {
     exclude group:"com.fasterxml.jackson.core", module: "jackson-core"
   }
   compile ("org.apache.httpcomponents:httpclient:4.5.12")
-  compile ("com.fasterxml.jackson.core:jackson-databind:2.11.3")
+  compile ("com.fasterxml.jackson.core:jackson-databind:2.12.0")
 
   testImplementation ('junit:junit:4.13')
   testImplementation ("com.adaptris:interlok-stubs:$interlokVersion") {
