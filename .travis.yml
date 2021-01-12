@@ -6,9 +6,9 @@ before_install:
   - sudo service haveged start
 
 script:
-  - jdk_switcher openjdk8
+  - jdk_switcher use openjdk8
   - ./gradlew -Dorg.gradle.console=plain --no-daemon clean check
-  - jdk_switcher oraclejdk11
+  - jdk_switcher use oraclejdk11
   - ./gradlew -Dorg.gradle.console=plain --no-daemon sonarqube
 
 git:
