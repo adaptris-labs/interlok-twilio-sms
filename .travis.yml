@@ -5,13 +5,18 @@ dist: trusty
 before_install:
   - sudo service haveged start
 
-script: ./gradlew -Dorg.gradle.console=plain --no-daemon clean check sonarqube
+script:
+  - jdk_switcher openjdk8
+  - ./gradlew -Dorg.gradle.console=plain --no-daemon clean check
+  - jdk_switcher oraclejdk11
+  - ./gradlew -Dorg.gradle.console=plain --no-daemon sonarqube
 
 git:
   depth: false
 
 jdk:
   - openjdk8
+  - oraclejdk11
 
 addons:
   sonarcloud:
