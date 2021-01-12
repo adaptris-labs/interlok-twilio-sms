@@ -8,7 +8,8 @@ before_install:
 script:
   - jdk_switcher use openjdk8
   - ./gradlew -Dorg.gradle.console=plain --no-daemon clean check
-  - jdk_switcher use oraclejdk11
+  - export JAVA_HOME=$HOME/openjdk11
+  - $TRAVIS_BUILD_DIR/install-jdk.sh --install openjdk11 --target $JAVA_HOME
   - ./gradlew -Dorg.gradle.console=plain --no-daemon sonarqube
 
 git:
@@ -16,7 +17,6 @@ git:
 
 jdk:
   - openjdk8
-  - oraclejdk11
 
 addons:
   sonarcloud:
