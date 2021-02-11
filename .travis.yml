@@ -1,6 +1,6 @@
 language: java
 sudo: required
-dist: trusty
+dist: xenial
 
 before_install:
   - sudo service haveged start
@@ -8,15 +8,11 @@ before_install:
 script:
   - jdk_switcher use openjdk8
   - ./gradlew -Dorg.gradle.console=plain --no-daemon clean check
-  - export JAVA_HOME=$HOME/openjdk11
-  - $TRAVIS_BUILD_DIR/install-jdk.sh --install openjdk11 --target $JAVA_HOME
+  - jdk_switcher use openjdk11
   - ./gradlew -Dorg.gradle.console=plain --no-daemon sonarqube
 
 git:
   depth: false
-
-jdk:
-  - openjdk8
 
 addons:
   sonarcloud:
