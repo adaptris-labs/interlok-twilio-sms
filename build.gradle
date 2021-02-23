@@ -75,7 +75,7 @@ dependencies {
   compile ("org.apache.httpcomponents:httpclient:4.5.13")
   compile ("com.fasterxml.jackson.core:jackson-databind:2.12.1")
 
-  testImplementation ('junit:junit:4.13.1')
+  testImplementation ('junit:junit:4.13.2')
   testImplementation ("com.adaptris:interlok-stubs:$interlokVersion") {
     changing= true
     exclude group: "org.apache.logging.log4j"
