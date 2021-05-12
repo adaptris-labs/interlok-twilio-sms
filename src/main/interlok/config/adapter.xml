@@ -11,10 +11,7 @@
         <standard-workflow>
           <unique-id>Send</unique-id>
           <consumer class="fs-consumer">
-            <destination class="configured-consume-destination">
-              <destination>${adapter.fs.consume.url}</destination>
-              <configured-thread-name>SendText</configured-thread-name>
-            </destination>
+            <base-directory-url>${adapter.fs.consume.url}</base-directory-url>
             <poller class="random-interval-poller"/>
             <create-dirs>true</create-dirs>
           </consumer>

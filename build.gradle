@@ -5,16 +5,16 @@ plugins {
   id "distribution"
   id "jacoco"
   id "com.palantir.docker" version "0.26.0"
-  id 'com.github.spotbugs' version '4.6.2'
-  id "org.sonarqube" version "3.1.1"
+  id 'com.github.spotbugs' version '4.7.1'
+  id "org.sonarqube" version "3.2.0"
 }
 
 
 ext {
   interlokParentGradle = 'https://raw.githubusercontent.com/adaptris-labs/interlok-build-parent/master/build.gradle'
-  interlokVersion = '3.12.0-RELEASE'
+  interlokVersion = '4.0.0-RELEASE'
   interlokUiVersion = interlokVersion
-  releaseVersion = '3.11-SNAPSHOT'
+  releaseVersion = '4-SNAPSHOT'
   nexusBaseUrl  = 'https://nexus.adaptris.net'
   javadocsBaseUrl = "${nexusBaseUrl}/nexus/content/sites/javadocs/com/adaptris"
   interlokJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : javadocsBaseUrl + "/interlok-core/" + interlokVersion
@@ -40,18 +40,14 @@ allprojects {
 }
 
 
-sourceCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 group   = 'io.github.adaptris-labs'
 version = releaseVersion
 def versionDir = "$buildDir/version"
 
 dockerfileZip.enabled=false
 
-repositories {
-    mavenCentral()
-    maven { url "${nexusBaseUrl}/nexus/content/groups/public" }
-    maven { url "${nexusBaseUrl}/nexus/content/groups/interlok" }
-}
 
 configurations {
   javadoc {}
@@ -67,13 +63,13 @@ dependencies {
   compile ("com.adaptris:interlok-core:$interlokVersion") { changing= true}
   compile ("com.adaptris:interlok-common:$interlokVersion") { changing= true}
   compile ("org.slf4j:slf4j-api:$slf4jVersion")
-  compile ("com.twilio.sdk:twilio:7.11+") {
+  compile ("com.twilio.sdk:twilio:8.12.0") {
     exclude group:"org.apache.httpcomponents", module: "httpclient"
     exclude group:"com.fasterxml.jackson.core", module: "jackson-databind"
     exclude group:"com.fasterxml.jackson.core", module: "jackson-core"
   }
   compile ("org.apache.httpcomponents:httpclient:4.5.13")
-  compile ("com.fasterxml.jackson.core:jackson-databind:2.12.1")
+  compile ("com.fasterxml.jackson.core:jackson-databind:2.12.3")
 
   testImplementation ('junit:junit:4.13.2')
   testImplementation ("com.adaptris:interlok-stubs:$interlokVersion") {
