@@ -1,7 +1,10 @@
-name: assemble
+name: gradle
 
 on:
   push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
   schedule:
     - cron: '15 01 * * SUN'
 
@@ -38,3 +41,5 @@ jobs:
     - name: Gradle Test
       run: |
         ./gradlew -Dorg.gradle.console=plain --no-daemon clean check
+    - name: codecov.io
+      uses: codecov/codecov-action@v1
