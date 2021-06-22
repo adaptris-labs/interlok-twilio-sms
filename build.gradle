@@ -1,7 +1,7 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.apache.tools.ant.filters.*
 plugins {
-  id "java"
+  id "java-library"
   id "distribution"
   id "jacoco"
   id "com.palantir.docker" version "0.26.0"
@@ -22,7 +22,7 @@ ext {
   componentName='Interlok/Twilio SMS'
   organizationName = "Adaptris Labs"
   organizationUrl = "https://interlok.adaptris.net/"
-  slf4jVersion = '1.7.30'
+  slf4jVersion = '1.7.31'
   // Custom properties to make verify work, since these are not checked in
   interlokVerifySystemProperties = [ 'twilio.account.sid': 'Dummy', 'twilio.account.auth': 'Dummy', 'twilio.sms.from': '+4412345678', 'twilio.sms.to': '+4412345678' ]
 }
@@ -60,16 +60,16 @@ configurations.all {
 }
 
 dependencies {
-  compile ("com.adaptris:interlok-core:$interlokVersion") { changing= true}
-  compile ("com.adaptris:interlok-common:$interlokVersion") { changing= true}
-  compile ("org.slf4j:slf4j-api:$slf4jVersion")
-  compile ("com.twilio.sdk:twilio:8.14.0") {
+  api ("com.adaptris:interlok-core:$interlokVersion") { changing= true}
+  api ("com.adaptris:interlok-common:$interlokVersion") { changing= true}
+  implementation ("org.slf4j:slf4j-api:$slf4jVersion")
+  implementation ("com.twilio.sdk:twilio:8.15.0") {
     exclude group:"org.apache.httpcomponents", module: "httpclient"
     exclude group:"com.fasterxml.jackson.core", module: "jackson-databind"
     exclude group:"com.fasterxml.jackson.core", module: "jackson-core"
   }
-  compile ("org.apache.httpcomponents:httpclient:4.5.13")
-  compile ("com.fasterxml.jackson.core:jackson-databind:2.12.3")
+  implementation ("org.apache.httpcomponents:httpclient:4.5.13")
+  implementation ("com.fasterxml.jackson.core:jackson-databind:2.12.3")
 
   testImplementation ('junit:junit:4.13.2')
   testImplementation ("com.adaptris:interlok-stubs:$interlokVersion") {
