@@ -12,6 +12,7 @@ plugins {
 
 ext {
   interlokParentGradle = 'https://raw.githubusercontent.com/adaptris/interlok-build-parent/main/v4/build.gradle'
+  interlokVersion = "4.1.0-RELEASE"
   interlokUiVersion = interlokVersion
   releaseVersion = '4-SNAPSHOT'
   nexusBaseUrl  = 'https://nexus.adaptris.net'
