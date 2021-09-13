@@ -63,7 +63,7 @@ dependencies {
   api ("com.adaptris:interlok-core:$interlokVersion") { changing= true}
   api ("com.adaptris:interlok-common:$interlokVersion") { changing= true}
   implementation ("org.slf4j:slf4j-api:$slf4jVersion")
-  implementation ("com.twilio.sdk:twilio:8.19.0") {
+  implementation ("com.twilio.sdk:twilio:8.19.1") {
     exclude group:"org.apache.httpcomponents", module: "httpclient"
     exclude group:"com.fasterxml.jackson.core", module: "jackson-databind"
     exclude group:"com.fasterxml.jackson.core", module: "jackson-core"
