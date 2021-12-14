@@ -118,8 +118,13 @@ spotbugsMain {
   // Ignore failures?
   // ignoreFailures = false
   reports {
-    xml.enabled = true
-    html.enabled = false
+    xml {
+      required.set(false)
+    }
+    html {
+      required.set(true)
+      stylesheet = 'default.xsl'
+    }
   }
 
   //includeFilter = new File("$rootDir/gradle/spotbugs-filter.xml")
