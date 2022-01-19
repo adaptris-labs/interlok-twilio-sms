@@ -14,7 +14,7 @@ ext {
   interlokParentGradle = 'https://raw.githubusercontent.com/adaptris/interlok-build-parent/main/v4/build.gradle'
   interlokVersion = "4.3.0-RELEASE"
   interlokUiVersion = interlokVersion
-  releaseVersion = '4-SNAPSHOT'
+  releaseVersion = interlokVersion.replace('-RELEASE', '-SNAPSHOT')
   nexusBaseUrl  = 'https://nexus.adaptris.net'
   javadocsBaseUrl = "${nexusBaseUrl}/nexus/content/sites/javadocs/com/adaptris"
   interlokJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : javadocsBaseUrl + "/interlok-core/" + interlokVersion
