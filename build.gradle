@@ -22,7 +22,7 @@ ext {
   componentName='Interlok/Twilio SMS'
   organizationName = "Adaptris Labs"
   organizationUrl = "https://interlok.adaptris.net/"
-  slf4jVersion = '1.7.33'
+  slf4jVersion = '1.7.35'
   // Custom properties to make verify work, since these are not checked in
   interlokVerifySystemProperties = [ 'twilio.account.sid': 'Dummy', 'twilio.account.auth': 'Dummy', 'twilio.sms.from': '+4412345678', 'twilio.sms.to': '+4412345678' ]
 }
