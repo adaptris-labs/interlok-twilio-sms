@@ -69,7 +69,9 @@ dependencies {
     exclude group:"com.fasterxml.jackson.core", module: "jackson-core"
   }
   implementation ("org.apache.httpcomponents:httpclient:4.5.13")
-  implementation ("com.fasterxml.jackson.core:jackson-databind:2.13.2.1")
+  implementation (platform("com.fasterxml.jackson:jackson-bom:2.13.2.20220328"))
+
+  implementation ("com.fasterxml.jackson.core:jackson-databind")
 
   testImplementation ('junit:junit:4.13.2')
   testImplementation ("com.adaptris:interlok-stubs:$interlokVersion") {
